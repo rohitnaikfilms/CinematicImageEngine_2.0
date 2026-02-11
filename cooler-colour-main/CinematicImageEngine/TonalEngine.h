@@ -29,6 +29,9 @@ public:
   };
 
   static void processPixel(float *r, float *g, float *b, const Params &params) {
+    if (params.strength <= 0.0)
+      return;
+
     float R = *r;
     float G = *g;
     float B = *b;

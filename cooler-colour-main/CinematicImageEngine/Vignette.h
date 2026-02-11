@@ -56,15 +56,12 @@ public:
   }
 
   static void processPixel(float *r, float *g, float *b, float V,
-                           float skinMask, const Params &p) {
+                           const Params &p) {
     if (!p.enable)
       return;
 
     // Invert mask
     float mask = p.invert ? (1.0f - V) : V;
-
-    // Attenuate by skin mask
-    mask *= (1.0f - skinMask);
 
     if (mask <= 0.0f)
       return;

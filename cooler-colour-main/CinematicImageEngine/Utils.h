@@ -173,7 +173,6 @@ inline void gaussianBlur(const float *src, float *dst, float *tmp, int w, int h,
   const size_t bufBytes = (size_t)w * h * 4 * sizeof(float);
 
   // Handle in-place (src == dst): copy to tmp first, use tmp as source.
-  // This avoids __restrict__ UB when boxBlurH reads src while writing dst.
   const float *actualSrc = src;
   if (src == dst) {
     std::memcpy(tmp, src, bufBytes);
@@ -188,6 +187,7 @@ inline void gaussianBlur(const float *src, float *dst, float *tmp, int w, int h,
   boxRadiiForGaussian(sigma, radii);
 
   // 3-pass box blur, ping-ponging between dst and tmp.
+  // Ordered so the final vertical pass writes directly to dst (no extra copy).
   // Pass 1: actualSrc → dst (H), dst → tmp (V)
   boxBlurH(actualSrc, dst, w, h, radii[0]);
   boxBlurV(dst, tmp, w, h, radii[0]);
@@ -196,12 +196,16 @@ inline void gaussianBlur(const float *src, float *dst, float *tmp, int w, int h,
   boxBlurH(tmp, dst, w, h, radii[1]);
   boxBlurV(dst, tmp, w, h, radii[1]);
 
-  // Pass 3: tmp → dst (H), dst → tmp (V) — result in tmp
+  // Pass 3: tmp → dst (H), then dst → dst via tmp
+  // H: tmp → dst, V: dst → ... we need result in dst.
+  // Reorder: H into tmp, V into dst.
   boxBlurH(tmp, dst, w, h, radii[2]);
-  boxBlurV(dst, tmp, w, h, radii[2]);
-
-  // Result is in tmp; copy to dst
-  std::memcpy(dst, tmp, bufBytes);
+  // We need V to read from dst and write elsewhere, then land in dst.
+  // But boxBlurV requires non-aliased src/dst. So: H→tmp, V→dst.
+  // Actually: do H: tmp→tmp via dst as scratch? No.
+  // Simplest correct approach: H writes to dst, copy dst→tmp, V writes to dst.
+  std::memcpy(tmp, dst, bufBytes);
+  boxBlurV(tmp, dst, w, h, radii[2]);
 }
 
 // --- Convenience overload that allocates its own temp buffer ---

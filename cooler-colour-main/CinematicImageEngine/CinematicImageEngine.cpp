@@ -232,7 +232,7 @@ void PipelineProcessor::multiThreadProcessImages(OfxRectI p_ProcWindow) {
     for (int i = 0; i < bufPixels; ++i) {
       const float *s = &bufA[i * 4];
       float mR, mG, mB;
-      DreamyMist::computeMistSource(s[0], s[1], s[2], 0.0f, mR, mG, mB, mist);
+      DreamyMist::computeMistSource(s[0], s[1], s[2], mR, mG, mB, mist);
       bufB[i * 4 + 0] = mR;
       bufB[i * 4 + 1] = mG;
       bufB[i * 4 + 2] = mB;
@@ -256,8 +256,7 @@ void PipelineProcessor::multiThreadProcessImages(OfxRectI p_ProcWindow) {
     for (int i = 0; i < bufPixels; ++i) {
       float *d = &bufA[i * 4];
       const float *bl = &bufB[i * 4];
-      DreamyBlur::applyDreamyBlur(d[0], d[1], d[2], bl[0], bl[1], bl[2], 0.0f,
-                                  blur);
+      DreamyBlur::applyDreamyBlur(d[0], d[1], d[2], bl[0], bl[1], bl[2], blur);
     }
   }
 
@@ -331,7 +330,7 @@ void PipelineProcessor::multiThreadProcessImages(OfxRectI p_ProcWindow) {
     for (int i = 0; i < bufPixels; ++i) {
       const float *s = &bufA[i * 4];
       float hR, hG, hB;
-      Halation::computeHalationSource(s[0], s[1], s[2], 0, hR, hG, hB, halo);
+      Halation::computeHalationSource(s[0], s[1], s[2], hR, hG, hB, halo);
       bufB[i * 4 + 0] = hR;
       bufB[i * 4 + 1] = hG;
       bufB[i * 4 + 2] = hB;
@@ -370,7 +369,7 @@ void PipelineProcessor::multiThreadProcessImages(OfxRectI p_ProcWindow) {
         const float u = ((float)(bufARect.x1 + x) - rodX1) * invW;
         const float V = Vignette::computeMask(u, v, aspect, vig);
         float *d = &bufA[(y * bufAW + x) * 4];
-        Vignette::processPixel(d, d + 1, d + 2, V, 0.0f, vig);
+        Vignette::processPixel(d, d + 1, d + 2, V, vig);
       }
     }
   }
@@ -513,7 +512,6 @@ CinematicPlugin::CinematicPlugin(OfxImageEffectHandle p_Handle)
   m_HaloWarmth = fetchDoubleParam("HaloWarmth");
   m_HaloRadius = fetchDoubleParam("HaloRadius");
   m_HaloSat = fetchDoubleParam("HaloSat");
-  m_HaloHueShift = fetchDoubleParam("HaloHueShift");
 
   // Streak
   m_EnableStreak = fetchBooleanParam("EnableStreak");
@@ -675,7 +673,6 @@ void CinematicPlugin::render(const OFX::RenderArguments &p_Args) {
     processor.halo.warmth = m_HaloWarmth->getValueAtTime(t);
     processor.halo.radius = m_HaloRadius->getValueAtTime(t);
     processor.halo.saturation = m_HaloSat->getValueAtTime(t);
-    processor.halo.hueShift = m_HaloHueShift->getValueAtTime(t);
 
     processor.streak.enable = m_EnableStreak->getValueAtTime(t);
     processor.streak.amount = m_StreakAmount->getValueAtTime(t);
@@ -1660,15 +1657,6 @@ void CinematicPluginFactory::describeInContext(
     d->setRange(0.0, 2.0);
     d->setDisplayRange(0.0, 2.0);
     d->setDefault(1.0);
-    d->setParent(*group);
-    page->addChild(*d);
-    d = p_Desc.defineDoubleParam("HaloHueShift");
-    d->setLabels("Halo Hue Shift", "Halo Hue", "HHue");
-    d->setDigits(3);
-    d->setIncrement(0.001);
-    d->setRange(-180.0, 180.0);
-    d->setDisplayRange(-180.0, 180.0);
-    d->setDefault(0.0);
     d->setParent(*group);
     page->addChild(*d);
 

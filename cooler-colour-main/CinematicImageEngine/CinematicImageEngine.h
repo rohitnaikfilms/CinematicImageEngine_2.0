@@ -195,7 +195,6 @@ public:
   OFX::DoubleParam *m_HaloWarmth;
   OFX::DoubleParam *m_HaloRadius;
   OFX::DoubleParam *m_HaloSat;
-  OFX::DoubleParam *m_HaloHueShift;
 
   // ==========================================
   // 15. Spatial — Chromatic Aberration
