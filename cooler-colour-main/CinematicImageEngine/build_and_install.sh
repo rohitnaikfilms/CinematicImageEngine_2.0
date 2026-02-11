@@ -22,8 +22,19 @@ else
 fi
 
 echo ""
-echo "[2/2] Installing to /Library/OFX/Plugins..."
+echo "[2/3] Installing to /Library/OFX/Plugins..."
 sudo cp -r CinematicImageEngine.ofx.bundle /Library/OFX/Plugins/
+sudo chmod -R 755 /Library/OFX/Plugins/CinematicImageEngine.ofx.bundle
+
+echo ""
+echo "[3/3] Clearing DaVinci Resolve OFX plugin cache..."
+RESOLVE_SUPPORT="$HOME/Library/Application Support/Blackmagic Design/DaVinci Resolve"
+if [ -d "$RESOLVE_SUPPORT" ]; then
+    rm -f "$RESOLVE_SUPPORT/OFXPluginCacheV2.xml" 2>/dev/null && echo "  ✓ Removed OFXPluginCacheV2.xml"
+    rm -f "$RESOLVE_SUPPORT/OFXPluginCache.xml"   2>/dev/null && echo "  ✓ Removed OFXPluginCache.xml"
+else
+    echo "  ⚠ Resolve support directory not found — cache not cleared."
+fi
 
 echo ""
 echo "✅ Done. Restart DaVinci Resolve to load the plugin."

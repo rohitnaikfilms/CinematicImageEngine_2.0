@@ -17,10 +17,19 @@
 // Plugin Definitions
 #define kPluginName "Cinematic Image Engine"
 #define kPluginGrouping "ColormetricLabs"
-#define kPluginDescription "Modular cinematic image pipeline."
 #define kPluginIdentifier "com.ColormetricLabs.CinematicImageEngine"
 #define kPluginVersionMajor 1
-#define kPluginVersionMinor 3
+#define kPluginVersionMinor 4
+
+// Stringify helper for version display
+#define _CIE_STR(x) #x
+#define _CIE_XSTR(x) _CIE_STR(x)
+#define kPluginVersionString                                                   \
+  "v" _CIE_XSTR(kPluginVersionMajor) "." _CIE_XSTR(kPluginVersionMinor)
+
+#define kPluginDescription                                                     \
+  "Modular cinematic image pipeline.\n" kPluginVersionString                   \
+  " — ColormetricLabs"
 
 #define kSupportsTiles true
 #define kSupportsMultiResolution false
